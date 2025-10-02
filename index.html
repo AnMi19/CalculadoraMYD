@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculadora Estadística</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🧮 Calculadora Estadística</h1>
+      </header>
+
+      <main>
+        <!-- FALLA 1: No hay validación de entrada inicial -->
+        <div class="step">
+          <h2>Ingreso de Datos</h2>
+          <div class="input-group">
+            <label for="numerosInput"
+              >Ingresa todos los números separados por comas:</label
+            >
+            <input
+              type="text"
+              id="numerosInput"
+              placeholder="Ej: 10,20,30,40,50"
+            />
+            <button onclick="procesarDatos()">Calcular</button>
+          </div>
+        </div>
+
+        <!-- FALLA 2: Resultados sin formato claro -->
+        <div class="results">
+          <h2>Resultados</h2>
+          <div id="resultados">
+            <p>Media: <span id="mediaResult">-</span></p>
+            <p>Desviación: <span id="desviacionResult">-</span></p>
+          </div>
+        </div>
+
+        <!-- FALLA 3: No hay manejo de errores visible -->
+        <div id="errorMessage" style="display: none"></div>
+      </main>
+    </div>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>

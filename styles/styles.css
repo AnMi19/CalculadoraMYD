@@ -1,0 +1,77 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* FALLA 4: Colores con poco contraste */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #F0F0F0; /* Contraste insuficiente */
+    color: #666666; /* Texto muy claro */
+    padding: 10px;
+}
+
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: white;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+/* FALLA 5: Diseño no responsive */
+header {
+    background: #CCCCCC; /* Color poco atractivo */
+    padding: 10px;
+    text-align: center;
+}
+
+.step {
+    margin: 10px 0;
+}
+
+.input-group {
+    margin: 5px 0;
+}
+
+/* FALLA 6: Inputs muy pequeños */
+input[type="text"] {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #999;
+    border-radius: 3px;
+}
+
+/* FALLA 7: Botón sin feedback visual */
+button {
+    background: #888888;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+.results {
+    margin: 10px 0;
+    padding: 10px;
+    background: #F8F8F8;
+    border-radius: 3px;
+}
+
+/* FALLA 8: Resultados mal formateados */
+#resultados {
+    font-size: 14px;
+    line-height: 1.2;
+}
+
+/* FALLA 9: No hay estados de hover/focus */
+input:focus {
+    outline: none; /* Elimina el outline por defecto */
+}
+
+button:hover {
+    background: #777777; /* Cambio mínimo */
+}
