@@ -1,92 +1,334 @@
-// FALLA 10: Variables globales sin organización
-let datos = [];
-
-// FALLA 11: Función sin validación de entrada
-function procesarDatos() {
-  const input = document.getElementById("numerosInput").value;
-
-  // FALLA 12: No maneja espacios ni formatos diferentes
-  datos = input.split(",");
-
-  // FALLA 13: No valida que sean números
-  calcularMedia();
-  calcularDesviacion();
-}
-
-// FALLA 14: Algoritmo de media incorrecto
-function calcularMedia() {
-  let suma = 0;
-
-  // FALLA 15: No convierte a números
-  for (let i = 0; i < datos.length; i++) {
-    suma += datos[i]; // Suma strings en lugar de números
+// Clase para manejar el arreglo de números
+class MiArreglo {
+  constructor() {
+    this.numeros = [];
+    this.cantidadTotal = 0;
   }
 
-  // FALLA 16: No maneja división por cero
-  const media = suma / datos.length;
-
-  // FALLA 17: No formatea el resultado
-  document.getElementById("mediaResult").textContent = media;
-}
-
-// FALLA 18: Algoritmo de desviación estándar incorrecto
-function calcularDesviacion() {
-  // FALLA 19: No calcula la media primero
-  let media = 0; // Media incorrecta
-
-  let sumaCuadrados = 0;
-
-  // FALLA 20: Fórmula incorrecta (usa n en lugar de n-1)
-  for (let i = 0; i < datos.length; i++) {
-    const diferencia = datos[i] - media;
-    sumaCuadrados += diferencia * diferencia;
+  definirCantidad(cantidad) {
+    this.cantidadTotal = cantidad;
+    this.numeros = [];
+    return `Arreglo listo para ${cantidad} números`;
   }
 
-  // FALLA 21: No verifica si hay suficientes datos
-  const varianza = sumaCuadrados / datos.length; // Debería ser n-1
-  const desviacion = Math.sqrt(varianza);
+  agregarNumero(numero) {
+    if (this.numeros.length < this.cantidadTotal) {
+      this.numeros.push(parseFloat(numero));
+      return {
+        exito: true,
+        numero: numero,
+        progreso: this.numeros.length,
+        total: this.cantidadTotal,
+        completo: this.numeros.length === this.cantidadTotal,
+      };
+    }
+    return { exito: false, error: "El arreglo ya está lleno" };
+  }
 
-  // FALLA 22: No maneja decimales
-  document.getElementById("desviacionResult").textContent = desviacion;
+  obtenerNumeros() {
+    return this.numeros;
+  }
+
+  obtenerProgreso() {
+    return {
+      actual: this.numeros.length,
+      total: this.cantidadTotal,
+      porcentaje: (this.numeros.length / this.cantidadTotal) * 100,
+    };
+  }
 }
 
-// FALLA 23: No hay manejo de errores
-function mostrarError(mensaje) {
-  const errorDiv = document.getElementById("errorMessage");
-  errorDiv.textContent = mensaje;
-  errorDiv.style.display = "block";
+// Clase para los cálculos estadísticos
+class CalculadoraEstadistica {
+  constructor() {
+    this.media = 0;
+    this.desviacion = 0;
+  }
+
+  calcularMedia(numeros) {
+    if (numeros.length === 0) return 0;
+
+    const suma = numeros.reduce((total, num) => total + num, 0);
+    this.media = suma / numeros.length;
+    return this.media;
+  }
+
+  calcularDesviacionEstandar(numeros) {
+    if (numeros.length < 2) return 0;
+
+    // Calcular media si no está calculada
+    if (this.media === 0) {
+      this.calcularMedia(numeros);
+    }
+
+    // Calcular suma de las diferencias al cuadrado
+    const sumaDiferencias = numeros.reduce((total, num) => {
+      const diferencia = num - this.media;
+      return total + diferencia * diferencia;
+    }, 0);
+
+    // Desviación estándar muestral (n-1)
+    this.desviacion = Math.sqrt(sumaDiferencias / (numeros.length - 1));
+    return this.desviacion;
+  }
+
+  obtenerResultados(numeros) {
+    const media = this.calcularMedia(numeros);
+    const desviacion = this.calcularDesviacionEstandar(numeros);
+
+    return {
+      media: media,
+      desviacion: desviacion,
+      totalNumeros: numeros.length,
+      numeros: numeros,
+    };
+  }
 }
 
-// FALLA 24: No hay función de limpieza/reset
-function limpiarDatos() {
-  // No implementada
+// Variables globales
+let miArreglo = new MiArreglo();
+let calculadora = new CalculadoraEstadistica();
+
+// Función para inicializar el arreglo con la cantidad deseada
+function inicializarArreglo() {
+  const cantidadInput = document.getElementById("cantidadInput");
+  const mensajeDiv = document.getElementById("configMensaje");
+
+  const cantidad = parseInt(cantidadInput.value);
+
+  if (isNaN(cantidad) || cantidad < 2) {
+    mostrarMensaje(
+      mensajeDiv,
+      "❌ Por favor ingresa un número mayor o igual a 2",
+      "error"
+    );
+    return;
+  }
+
+  if (cantidad > 50) {
+    mostrarMensaje(mensajeDiv, "❌ El máximo permitido es 50 números", "error");
+    return;
+  }
+
+  // Inicializar el arreglo
+  const mensaje = miArreglo.definirCantidad(cantidad);
+  mostrarMensaje(mensajeDiv, "✅ " + mensaje, "success");
+
+  // Mostrar paso 2
+  document.getElementById("step1").style.display = "none";
+  document.getElementById("step2").style.display = "block";
+
+  // Actualizar interfaz
+  actualizarInterfazIngreso();
 }
 
-// FALLA 25: No hay validación de entrada en tiempo real
-document.getElementById("numerosInput").addEventListener("input", function (e) {
-  // No hace validación
+// Función para agregar números al arreglo
+function agregarNumero() {
+  const numeroInput = document.getElementById("numeroInput");
+  const mensajeDiv = document.getElementById("numeroMensaje");
+
+  const numero = numeroInput.value.trim();
+
+  if (numero === "") {
+    mostrarMensaje(mensajeDiv, "❌ Por favor ingresa un número", "error");
+    return;
+  }
+
+  if (isNaN(parseFloat(numero))) {
+    mostrarMensaje(
+      mensajeDiv,
+      "❌ Por favor ingresa un número válido",
+      "error"
+    );
+    return;
+  }
+
+  // Agregar número al arreglo
+  const resultado = miArreglo.agregarNumero(numero);
+
+  if (resultado.exito) {
+    mostrarMensaje(
+      mensajeDiv,
+      `✅ Número ${numero} agregado correctamente`,
+      "success"
+    );
+    numeroInput.value = ""; // Limpiar input
+    actualizarInterfazIngreso();
+
+    // Si el arreglo está completo, mostrar paso 3
+    if (resultado.completo) {
+      setTimeout(() => {
+        document.getElementById("step2").style.display = "none";
+        document.getElementById("step3").style.display = "block";
+        mostrarNumerosFinales();
+      }, 1000);
+    }
+  } else {
+    mostrarMensaje(mensajeDiv, "❌ " + resultado.error, "error");
+  }
+}
+
+// Función para calcular las estadísticas
+function calcularEstadisticas() {
+  const numeros = miArreglo.obtenerNumeros();
+  const resultados = calculadora.obtenerResultados(numeros);
+
+  // Mostrar resultados en la interfaz
+  document.getElementById("resultadoMedia").textContent =
+    resultados.media.toFixed(4);
+  document.getElementById("resultadoDesviacion").textContent =
+    resultados.desviacion.toFixed(4);
+  document.getElementById("resultadoTotal").textContent =
+    resultados.totalNumeros;
+
+  // Destacar los resultados
+  const resultadoElements = document.querySelectorAll(".valor");
+  resultadoElements.forEach((element) => {
+    element.style.color = "#2ecc71";
+    element.style.fontWeight = "bold";
+  });
+}
+
+// Función para reiniciar la calculadora
+function reiniciarCalculadora() {
+  // Reiniciar las clases
+  miArreglo = new MiArreglo();
+  calculadora = new CalculadoraEstadistica();
+
+  // Regresar al paso 1
+  document.getElementById("step3").style.display = "none";
+  document.getElementById("step2").style.display = "none";
+  document.getElementById("step1").style.display = "block";
+
+  // Limpiar inputs y mensajes
+  document.getElementById("cantidadInput").value = "5";
+  document.getElementById("numeroInput").value = "";
+  document.getElementById("listaNumeros").innerHTML = "";
+  document.getElementById("numerosFinales").innerHTML = "";
+
+  // Limpiar resultados
+  document.getElementById("resultadoMedia").textContent = "-";
+  document.getElementById("resultadoDesviacion").textContent = "-";
+  document.getElementById("resultadoTotal").textContent = "-";
+
+  // Limpiar mensajes
+  const mensajes = document.querySelectorAll(".mensaje");
+  mensajes.forEach((mensaje) => {
+    mensaje.style.display = "none";
+    mensaje.className = "mensaje";
+  });
+}
+
+// Funciones auxiliares para la interfaz
+function actualizarInterfazIngreso() {
+  const progreso = miArreglo.obtenerProgreso();
+  const numeroActual = progreso.actual + 1;
+
+  // Actualizar texto del progreso
+  document.getElementById("progresoTexto").textContent = `Progreso: ${
+    progreso.actual
+  } de ${progreso.total} números (${Math.round(progreso.porcentaje)}%)`;
+
+  // Actualizar barra de progreso
+  document.getElementById(
+    "barraProgreso"
+  ).style.width = `${progreso.porcentaje}%`;
+
+  // Actualizar label del input
+  document.getElementById(
+    "labelNumero"
+  ).textContent = `Ingresa el número ${numeroActual}:`;
+
+  // Actualizar lista de números
+  actualizarListaNumeros();
+}
+
+function actualizarListaNumeros() {
+  const numeros = miArreglo.obtenerNumeros();
+  const listaDiv = document.getElementById("listaNumeros");
+
+  listaDiv.innerHTML = "";
+
+  numeros.forEach((numero, index) => {
+    const badge = document.createElement("span");
+    badge.className = "numero-badge";
+    badge.textContent = numero;
+    badge.title = `Número ${index + 1}: ${numero}`;
+    listaDiv.appendChild(badge);
+  });
+}
+
+function mostrarNumerosFinales() {
+  const numeros = miArreglo.obtenerNumeros();
+  const finalesDiv = document.getElementById("numerosFinales");
+
+  finalesDiv.innerHTML = "";
+
+  numeros.forEach((numero, index) => {
+    const badge = document.createElement("span");
+    badge.className = "numero-badge";
+    badge.textContent = numero;
+    badge.title = `Número ${index + 1}: ${numero}`;
+    finalesDiv.appendChild(badge);
+  });
+}
+
+function mostrarMensaje(elemento, mensaje, tipo) {
+  elemento.textContent = mensaje;
+  elemento.className = `mensaje ${tipo}`;
+
+  // Ocultar mensaje después de 3 segundos (excepto errores)
+  if (tipo === "success") {
+    setTimeout(() => {
+      elemento.style.display = "none";
+    }, 3000);
+  }
+}
+
+// Event listeners para mejor UX
+document.addEventListener("DOMContentLoaded", function () {
+  // Permitir enviar con Enter
+  document
+    .getElementById("cantidadInput")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        inicializarArreglo();
+      }
+    });
+
+  document
+    .getElementById("numeroInput")
+    .addEventListener("keypress", function (e) {
+      if (e.key === "Enter") {
+        agregarNumero();
+      }
+    });
+
+  // Focus en el primer input al cargar
+  document.getElementById("cantidadInput").focus();
 });
 
-// FALLA 26: No permite otros separadores
-function procesarEntradaAlternativa() {
-  // No implementada
+// Función para ejemplo rápido (opcional)
+function cargarEjemplo() {
+  document.getElementById("cantidadInput").value = "5";
+  inicializarArreglo();
+
+  // Simular entrada de números después de un delay
+  setTimeout(() => {
+    const numerosEjemplo = [10.5, 20.3, 15.7, 8.9, 12.1];
+    let index = 0;
+
+    const simularEntrada = setInterval(() => {
+      if (index < numerosEjemplo.length) {
+        document.getElementById("numeroInput").value = numerosEjemplo[index];
+        agregarNumero();
+        index++;
+      } else {
+        clearInterval(simularEntrada);
+      }
+    }, 800);
+  }, 1000);
 }
 
-// FALLA 27: No maneja números negativos correctamente
-function validarNumero(numero) {
-  // No implementada
-  return true; // Siempre retorna verdadero
-}
-
-// FALLA 28: Cálculos sin precisión decimal
-function formatearNumero(numero) {
-  // No implementada
-  return numero; // Retorna el número sin formatear
-}
-
-// FALLA 29: No hay pruebas de los cálculos
-function verificarCalculos() {
-  // No implementada
-}
-
-// FALLA 30: Código desorganizado y sin comentarios útiles
+// Para probar rápidamente, descomenta la siguiente línea:
+// document.addEventListener('DOMContentLoaded', cargarEjemplo);
